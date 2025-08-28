@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Title from "@/components/ui/title";
+import { getOrderById } from "@/firebase/storeActions";
 import { CheckCircle, Package, Phone, MapPin } from "lucide-react";
 
 export default function OrderSuccessContent() {
@@ -13,9 +14,11 @@ export default function OrderSuccessContent() {
 
   useEffect(() => {
     if (orderId) {
-      const orders = JSON.parse(localStorage.getItem('gym-orders') || '[]');
-      const foundOrder = orders.find((o: any) => o.id === orderId);
-      setOrder(foundOrder);
+      const fetchOrder = async () => {
+        const orderData = await getOrderById(orderId);
+        setOrder(orderData);
+      };
+      fetchOrder();
     }
   }, [orderId]);
 

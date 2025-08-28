@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { mockProducts, mockCategories } from "@/data/store/products";
+import { getProducts, getCategories } from "@/firebase/storeActions";
 import ProductsGrid from "@/components/store/ProductsGrid";
 import ProductFilters from "@/components/store/ProductFilters";
 import Title from "@/components/ui/title";
@@ -24,11 +24,15 @@ export default async function ProductsPage({
   searchParams: Promise<SearchParams> 
 }) {
   const params = await searchParams;
+  
+  // Fetch real data from Firebase
+  const allProducts = await getProducts();
+  
   const currentPage = parseInt(params.page || '1');
   const itemsPerPage = 12;
 
   // Filter products based on search params
-  let filteredProducts = [...mockProducts];
+  let filteredProducts = [...allProducts];
 
   if (params.category) {
     filteredProducts = filteredProducts.filter(p => p.category === params.category);

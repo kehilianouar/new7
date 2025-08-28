@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Title from "@/components/ui/title";
+import { getStoreSettings, updateStoreSettings, getShippingPrices, updateShippingPrices } from "@/firebase/storeActions";
 import { toast } from "sonner";
 
 interface WilayaShipping {
@@ -68,23 +69,25 @@ export default function AdminSettings() {
 
   const fetchData = async () => {
     try {
+      // Fetch store settings and shipping prices from Firebase
+      const [settings, shippingData] = await Promise.all([
+        getStoreSettings(),
+        getShippingPrices()
+      ]);
+      
+      if (settings) {
+        setStoreSettings(settings);
+      }
+      
+      if (shippingData.length > 0) {
+        setWilayas(shippingData);
+      } else {
+        // Initialize with default data if no shipping data exists
+        await initializeShippingData();
+      }
+      
       const citiesData = await import("@/data/algerian-cities.json");
       const allCities = citiesData.default || citiesData;
-
-      const uniqueWilayas = Array.from(
-        new Map(
-          allCities.map((city: any) => [
-            city.wilaya_code,
-            {
-              id: city.wilaya_code,
-              name: city.wilaya_name,
-              deskPrice: storeSettings.shippingSettings.defaultDeskPrice,
-              homePrice: storeSettings.shippingSettings.defaultHomePrice,
-            },
-          ])
-        ).values()
-      ).sort((a, b) => parseInt(a.id) - parseInt(b.id)); // Sort by wilaya code
-      setWilayas(uniqueWilayas);
 
       const formattedCities: CityData[] = allCities.map((city: any) => ({
         id: city.id.toString(),
@@ -101,6 +104,33 @@ export default function AdminSettings() {
       console.error("Error fetching data:", error);
       toast.error("خطأ في تحميل البيانات");
       setLoading(false);
+    }
+  };
+
+  const initializeShippingData = async () => {
+    try {
+      const citiesData = await import("@/data/algerian-cities.json");
+      const allCities = citiesData.default || citiesData;
+
+      const uniqueWilayas = Array.from(
+        new Map(
+          allCities.map((city: any) => [
+            city.wilaya_code,
+            {
+              id: city.wilaya_code,
+              name: city.wilaya_name,
+              deskPrice: storeSettings.shippingSettings.defaultDeskPrice,
+              homePrice: storeSettings.shippingSettings.defaultHomePrice,
+            },
+          ])
+        ).values()
+      ).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+      
+      setWilayas(uniqueWilayas);
+      // Save to Firebase
+      await updateShippingPrices(uniqueWilayas);
+    } catch (error) {
+      console.error("Error initializing shipping data:", error);
     }
   };
 
@@ -139,9 +169,17 @@ export default function AdminSettings() {
     e.preventDefault();
     setSaving(true);
     try {
-      console.log("Saving settings:", { storeSettings, wilayas });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("تم حفظ الإعدادات بنجاح");
+      // Save store settings and shipping prices
+      const [settingsSuccess, shippingSuccess] = await Promise.all([
+        updateStoreSettings(storeSettings),
+        updateShippingPrices(wilayas)
+      ]);
+      
+      if (settingsSuccess && shippingSuccess) {
+        toast.success("تم حفظ الإعدادات بنجاح");
+      } else {
+        toast.error("فشل في حفظ بعض الإعدادات");
+      }
     } catch (error) {
       console.error("Error saving settings:", error);
       toast.error("خطأ في حفظ الإعدادات");

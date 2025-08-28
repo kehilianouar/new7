@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import OrderSuccessContent from "@/components/store/OrderSuccessContent";
 import Footer from "@/components/shared/footer";
+import { getOrderById } from "@/firebase/storeActions";
 
 export const metadata = {
   title: "تم إرسال الطلب بنجاح - GYM DADA STORE",

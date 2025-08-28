@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import Title from "@/components/ui/title";
 import { getBaladiyas } from "@/data/store/locations";
-import { getStoreSettingsAndShippingPrices } from "/src/firebase/ecommerceActions.ts"; 
+import { getStoreSettings, getShippingPrices, createOrder } from "@/firebase/storeActions";
+import { getCurrentUser } from "@/firebase/authActions";
 import { toast } from "sonner";
 import { ShoppingBag, MapPin, Phone, User, Home, Building } from "lucide-react";
 
@@ -52,15 +53,26 @@ export default function CheckoutContent() {
   useEffect(() => {
     const fetchSettings = async () => {
       setIsLoading(true);
-      const settings = await getStoreSettingsAndShippingPrices();
-      if (settings) {
-        // Filter out excluded wilayas
-        const filteredWilayas = settings.wilayaShippingPrices.filter(
-          (wilaya) => !settings.excludedWilayas.includes(wilaya.id)
-        );
-        setAvailableWilayas(filteredWilayas);
-        setFreeShippingThreshold(settings.shippingSettings.freeShippingThreshold);
+      
+      try {
+        const [settings, shippingPrices] = await Promise.all([
+          getStoreSettings(),
+          getShippingPrices()
+        ]);
+        
+        if (settings && shippingPrices) {
+          // Filter out excluded wilayas
+          const filteredWilayas = shippingPrices.filter(
+            (wilaya) => !settings.excludedWilayas.includes(wilaya.id)
+          );
+          setAvailableWilayas(filteredWilayas);
+          setFreeShippingThreshold(settings.shippingSettings.freeShippingThreshold);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        toast.error('خطأ في تحميل إعدادات المتجر');
       }
+      
       setIsLoading(false);
     };
     fetchSettings();
@@ -117,12 +129,11 @@ export default function CheckoutContent() {
     setIsSubmitting(true);
     
     try {
-      // Simulate order submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const user = await getCurrentUser();
       
       // Create order object
-      const order = {
-        id: Date.now().toString(),
+      const orderData = {
+        userId: user?.uid,
         customerInfo: formData,
         items: cart.items,
         subtotal: getCartTotal(),
@@ -130,23 +141,26 @@ export default function CheckoutContent() {
         total: getCartTotal() + shippingCost,
         status: 'pending',
         paymentMethod: 'cod',
-        createdAt: new Date()
+        notes: formData.notes
       };
       
-      // Save order to localStorage (in real app, send to backend)
-      const existingOrders = JSON.parse(localStorage.getItem('gym-orders') || '[]');
-      existingOrders.push(order);
-      localStorage.setItem('gym-orders', JSON.stringify(existingOrders));
+      // Save order to Firebase
+      const orderId = await createOrder(orderData);
       
-      // Clear cart
-      clearCart();
-      
-      toast.success("تم إرسال طلبك بنجاح! سنتواصل معك قريباً");
-      
-      // Redirect to success page
-      router.push(`/order-success?orderId=${order.id}`);
+      if (orderId) {
+        // Clear cart
+        clearCart();
+        
+        toast.success("تم إرسال طلبك بنجاح! سنتواصل معك قريباً");
+        
+        // Redirect to success page
+        router.push(`/order-success?orderId=${orderId}`);
+      } else {
+        toast.error("فشل في إرسال الطلب");
+      }
       
     } catch (error) {
+      console.error('Error submitting order:', error);
       toast.error("حدث خطأ أثناء إرسال الطلب");
     } finally {
       setIsSubmitting(false);

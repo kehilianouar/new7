@@ -9,7 +9,7 @@ import {
   TrendingUp,
   TrendingDown
 } from "lucide-react";
-import { getAllProducts, getAllOrders, getUsers } from "@/firebase/ecommerceActions";
+import { getProducts, getOrders, getUsers } from "@/firebase/storeActions";
 import { Product, Order, User } from "@/types/store";
 import Title from "@/components/ui/title";
 
@@ -28,8 +28,8 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const [products, orders, users] = await Promise.all([
-          getAllProducts(),
-          getAllOrders(),
+          getProducts(),
+          getOrders(),
           getUsers()
         ]);
 

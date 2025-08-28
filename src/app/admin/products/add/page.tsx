@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Title from "@/components/ui/title";
-import { addProduct } from "@/firebase/ecommerceActions";
+import { createProduct } from "@/firebase/storeActions";
 import { Product } from "@/types/store";
 import { toast } from "sonner";
 
@@ -64,11 +64,10 @@ export default function AddProduct() {
       const productData = {
         ...formData,
         images: imageUrls,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        inStock: formData.stockQuantity! > 0
       };
 
-      const productId = await addProduct(productData as Omit<Product, 'id'>);
+      const productId = await createProduct(productData as Omit<Product, 'id'>);
       if (productId) {
         toast.success('تم إضافة المنتج بنجاح');
         router.push('/admin/products');

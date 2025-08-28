@@ -12,7 +12,7 @@ import { auth } from "@/firebase/firebaseConfig"
 import { getUserProfile } from "@/firebase/authActions"
 
 // Components
-import CompleteProfile from "@/components/auth/completeProfile"
+import OptionalProfileForm from "@/components/auth/OptionalProfileForm"
 import Title from "@/components/ui/title"
 
 export default function SignupPage() {
@@ -65,7 +65,7 @@ export default function SignupPage() {
           />
         </div>
 
-        <CompleteProfile />
+        <OptionalProfileForm />
 
         {/* الفوتر */}
         <p className="text-center mt-8 text-white/60 text-sm">

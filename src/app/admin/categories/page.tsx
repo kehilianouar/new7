@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Title from "@/components/ui/title";
 import { Category } from "@/types/store";
+import { getCategories, createCategory, updateCategory, deleteCategory } from "@/firebase/storeActions";
 import { toast } from "sonner";
 
 export default function AdminCategories() {
@@ -37,29 +38,9 @@ export default function AdminCategories() {
 
   const fetchCategories = async () => {
     try {
-      // TODO: Implement actual category fetching from Firebase
-      const mockCategories: Category[] = [
-        {
-          id: "1",
-          name: "المكملات الغذائية",
-          description: "مكملات غذائية وبروتينات",
-          isActive: true
-        },
-        {
-          id: "2",
-          name: "الملابس الرياضية",
-          description: "ملابس وأحذية رياضية",
-          isActive: true
-        },
-        {
-          id: "3",
-          name: "المعدات الرياضية",
-          description: "أجهزة ومعدات رياضية",
-          isActive: true
-        }
-      ];
-      setCategories(mockCategories);
-      setFilteredCategories(mockCategories);
+      const categoriesData = await getCategories();
+      setCategories(categoriesData);
+      setFilteredCategories(categoriesData);
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast.error('خطأ في تحميل الفئات');
@@ -81,12 +62,20 @@ export default function AdminCategories() {
     
     try {
       if (editingCategory) {
-        // TODO: Implement update category
-        toast.success('تم تحديث الفئة بنجاح');
-        setEditingCategory(null);
+        const success = await updateCategory(editingCategory.id, formData as Category);
+        if (success) {
+          toast.success('تم تحديث الفئة بنجاح');
+          setEditingCategory(null);
+        } else {
+          toast.error('فشل في تحديث الفئة');
+        }
       } else {
-        // TODO: Implement add category
-        toast.success('تم إضافة الفئة بنجاح');
+        const categoryId = await createCategory(formData as Omit<Category, 'id'>);
+        if (categoryId) {
+          toast.success('تم إضافة الفئة بنجاح');
+        } else {
+          toast.error('فشل في إضافة الفئة');
+        }
       }
       
       setFormData({ name: "", description: "", image: "", isActive: true });
@@ -108,9 +97,13 @@ export default function AdminCategories() {
     if (!confirm('هل أنت متأكد من حذف هذه الفئة؟')) return;
 
     try {
-      // TODO: Implement delete category
-      toast.success('تم حذف الفئة بنجاح');
-      fetchCategories();
+      const success = await deleteCategory(categoryId);
+      if (success) {
+        toast.success('تم حذف الفئة بنجاح');
+        fetchCategories();
+      } else {
+        toast.error('فشل في حذف الفئة');
+      }
     } catch (error) {
       console.error('Error deleting category:', error);
       toast.error('خطأ في حذف الفئة');

@@ -18,7 +18,7 @@ import {
 } from "@/firebase/authActions";
 
 // E-commerce Actions
-import { getUserOrders } from "@/firebase/ecommerceActions";
+import { getUserOrders } from "@/firebase/storeActions";
 
 // Components
 import Title from "@/components/ui/title";

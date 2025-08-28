@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Title from "@/components/ui/title";
-import { getProductById, updateProduct } from "@/firebase/ecommerceActions";
+import { getProductById, updateProduct } from "@/firebase/storeActions";
 import { Product } from "@/types/store";
 import { toast } from "sonner";
 
@@ -88,8 +88,7 @@ export default function EditProduct() {
     try {
       const productData = {
         ...formData,
-        images: imageUrls,
-        updatedAt: new Date()
+        images: imageUrls
       };
 
       const success = await updateProduct(productId, productData);

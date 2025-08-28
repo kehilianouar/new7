@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Title from "@/components/ui/title";
-import { getUsers, updateUserRole } from "@/firebase/ecommerceActions";
+import { getUsers, updateUserRole } from "@/firebase/storeActions";
 import { User } from "@/types/store";
 import { User as UserIcon, Shield, Crown } from "lucide-react";
 import { toast } from "sonner";

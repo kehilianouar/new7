@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Title from "@/components/ui/title";
-import { getAllOrders, updateOrderStatus } from "@/firebase/ecommerceActions";
+import { getOrders, updateOrderStatus } from "@/firebase/storeActions";
 import { Order } from "@/types/store";
 import { Eye, Package, Truck, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ export default function AdminOrders() {
 
   const fetchOrders = async () => {
     try {
-      const ordersData = await getAllOrders();
+      const ordersData = await getOrders();
       setOrders(ordersData);
       setFilteredOrders(ordersData);
     } catch (error) {

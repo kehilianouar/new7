@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Title from "@/components/ui/title";
-import { getAllProducts, deleteProduct } from "@/firebase/ecommerceActions";
+import { getProducts, deleteProduct } from "@/firebase/storeActions";
 import { Product } from "@/types/store";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,7 +33,7 @@ export default function AdminProducts() {
 
   const fetchProducts = async () => {
     try {
-      const productsData = await getAllProducts();
+      const productsData = await getProducts();
       setProducts(productsData);
       setFilteredProducts(productsData);
     } catch (error) {

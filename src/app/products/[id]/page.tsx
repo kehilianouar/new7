@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { mockProducts } from "@/data/store/products";
+import { getProductById, getProducts } from "@/firebase/storeActions";
 import ProductDetails from "@/components/store/ProductDetails";
 import Footer from "@/components/shared/footer";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = mockProducts.find(p => p.id === id);
+  const product = await getProductById(id);
   
   if (!product) {
     return {
@@ -26,14 +26,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = mockProducts.find(p => p.id === id);
+  const product = await getProductById(id);
 
   if (!product) {
     notFound();
   }
 
   // Get related products (same category, excluding current product)
-  const relatedProducts = mockProducts
+  const allProducts = await getProducts();
+  const relatedProducts = allProducts
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 

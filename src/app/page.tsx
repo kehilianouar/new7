@@ -6,21 +6,27 @@ import CategoriesSection from "@/components/store/CategoriesSection";
 import Footer from "@/components/shared/footer";
 
 // Store Data
-import { mockProducts, mockBanners } from "@/data/store/products";
+import { getProducts, getBanners } from "@/firebase/storeActions";
 import ProductCard from "@/components/store/ProductCard";
 import Title from "@/components/ui/title";
 import Link from "next/link";
 
 export default async function Home() {
+  // Fetch real data from Firebase
+  const [products, banners] = await Promise.all([
+    getProducts(),
+    getBanners()
+  ]);
+
   // تصفية المنتجات حسب الفئات
-  const bestSellers = mockProducts.filter(p => p.isBestSeller).slice(0, 8);
-  const onSaleProducts = mockProducts.filter(p => p.isOnSale || p.discount).slice(0, 8);
-  const newProducts = mockProducts.filter(p => p.isNew).slice(0, 8);
-  const allProducts = mockProducts.slice(0, 16);
+  const bestSellers = products.filter(p => p.isBestSeller).slice(0, 8);
+  const onSaleProducts = products.filter(p => p.isOnSale || p.discount).slice(0, 8);
+  const newProducts = products.filter(p => p.isNew).slice(0, 8);
+  const allProducts = products.slice(0, 16);
 
   return (
     <main className="flex flex-col gap-8 md:gap-6">
-      <HeroSection banners={mockBanners} />
+      <HeroSection banners={banners.filter(b => b.isActive)} />
       <div className="mx-4 md:mx-8 flex flex-col gap-6 md:gap-8">        
         <CategoriesSection />
         <ProductSection title="الأكثر مبيعاً" products={bestSellers} viewAllLink="/products?filter=bestsellers" />

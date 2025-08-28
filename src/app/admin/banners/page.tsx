@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Title from "@/components/ui/title";
 import { Banner } from "@/types/store";
+import { getBanners, createBanner, updateBanner, deleteBanner } from "@/firebase/storeActions";
 import { toast } from "sonner";
 
 export default function AdminBanners() {
@@ -39,29 +40,9 @@ export default function AdminBanners() {
 
   const fetchBanners = async () => {
     try {
-      // TODO: Implement actual banner fetching from Firebase
-      const mockBanners: Banner[] = [
-        {
-          id: "1",
-          title: "عرض خاص على المكملات",
-          description: "خصم 20% على جميع المكملات الغذائية",
-          image: "/images/banner1.jpg",
-          link: "/categories/supplements",
-          isActive: true,
-          order: 1
-        },
-        {
-          id: "2",
-          title: "ملابس رياضية جديدة",
-          description: "تشكيلة جديدة من الملابس الرياضية",
-          image: "/images/banner2.jpg",
-          link: "/categories/clothing",
-          isActive: true,
-          order: 2
-        }
-      ];
-      setBanners(mockBanners);
-      setFilteredBanners(mockBanners);
+      const bannersData = await getBanners();
+      setBanners(bannersData);
+      setFilteredBanners(bannersData);
     } catch (error) {
       console.error('Error fetching banners:', error);
       toast.error('خطأ في تحميل البانرات');
@@ -83,12 +64,20 @@ export default function AdminBanners() {
     
     try {
       if (editingBanner) {
-        // TODO: Implement update banner
-        toast.success('تم تحديث البانر بنجاح');
-        setEditingBanner(null);
+        const success = await updateBanner(editingBanner.id, formData as Banner);
+        if (success) {
+          toast.success('تم تحديث البانر بنجاح');
+          setEditingBanner(null);
+        } else {
+          toast.error('فشل في تحديث البانر');
+        }
       } else {
-        // TODO: Implement add banner
-        toast.success('تم إضافة البانر بنجاح');
+        const bannerId = await createBanner(formData as Omit<Banner, 'id'>);
+        if (bannerId) {
+          toast.success('تم إضافة البانر بنجاح');
+        } else {
+          toast.error('فشل في إضافة البانر');
+        }
       }
       
       setFormData({ title: "", description: "", image: "", link: "", isActive: true, order: 0 });
@@ -110,9 +99,13 @@ export default function AdminBanners() {
     if (!confirm('هل أنت متأكد من حذف هذا البانر؟')) return;
 
     try {
-      // TODO: Implement delete banner
-      toast.success('تم حذف البانر بنجاح');
-      fetchBanners();
+      const success = await deleteBanner(bannerId);
+      if (success) {
+        toast.success('تم حذف البانر بنجاح');
+        fetchBanners();
+      } else {
+        toast.error('فشل في حذف البانر');
+      }
     } catch (error) {
       console.error('Error deleting banner:', error);
       toast.error('خطأ في حذف البانر');

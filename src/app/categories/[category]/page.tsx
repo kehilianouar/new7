@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { mockProducts, mockCategories } from "@/data/store/products";
+import { getProducts, getCategories } from "@/firebase/storeActions";
 import ProductsGrid from "@/components/store/ProductsGrid";
 import ProductFilters from "@/components/store/ProductFilters";
 import Title from "@/components/ui/title";
@@ -27,8 +27,14 @@ export default async function CategoryPage({
   const { category } = await params;
   const resolvedSearchParams = await searchParams;
   
+  // Fetch real data from Firebase
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories()
+  ]);
+  
   // Find category info
-  const categoryInfo = mockCategories.find(cat => cat.id === category);
+  const categoryInfo = categories.find(cat => cat.id === category);
   if (!categoryInfo) {
     notFound();
   }
@@ -37,7 +43,7 @@ export default async function CategoryPage({
   const itemsPerPage = 12;
 
   // Filter products by category
-  let filteredProducts = mockProducts.filter(p => p.category === category);
+  let filteredProducts = products.filter(p => p.category === category);
 
   if (resolvedSearchParams.search) {
     const searchTerm = resolvedSearchParams.search.toLowerCase();
@@ -85,7 +91,8 @@ export default async function CategoryPage({
 }
 
 export async function generateStaticParams() {
-  return mockCategories
+  const categories = await getCategories();
+  return categories
     .filter(cat => !cat.parentId) // Only main categories
     .map((category) => ({
       category: category.id,

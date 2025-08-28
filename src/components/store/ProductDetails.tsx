@@ -9,6 +9,7 @@ import { Heart, ShoppingCart, Star, Plus, Minus, Share2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import ProductSection from "./ProductSection";
+import ProductReviews from "./ProductReviews";
 import Title from "@/components/ui/title";
 
 interface ProductDetailsProps {
@@ -327,6 +328,11 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
           products={relatedProducts}
         />
       )}
+
+      {/* Product Reviews */}
+      <div className="bg-[#ffffff1a] border border-white/10 rounded-xl p-4 md:p-6">
+        <ProductReviews productId={product.id} />
+      </div>
     </div>
   );
 }
